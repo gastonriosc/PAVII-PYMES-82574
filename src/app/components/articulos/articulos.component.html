@@ -70,7 +70,7 @@
           </button>
           <button
             type="button"
-            class="btn btn-sm btn-outline-primary"
+            class="btn btn-sm btn-primary"
             title="Modificar"
             (click)="Modificar(item)"
           >
@@ -78,7 +78,7 @@
           </button>
           <button
             type="button"
-            class="btn btn-sm btn-outline-{{
+            class="btn btn-sm btn-{{
               item.Activo ? 'danger' : 'success'
             }}"
             title="{{ item.Activo ? 'Desactivar' : 'Activar' }}"
