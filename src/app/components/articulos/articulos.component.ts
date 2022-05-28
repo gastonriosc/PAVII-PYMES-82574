@@ -3,6 +3,7 @@ import { Articulo } from '../../models/articulo';
 import { ArticuloFamilia } from '../../models/articulo-familia';
 import { MockArticulosService } from '../../services/mock-articulos.service';
 import { MockArticulosFamiliasService } from '../../services/mock-articulos-familias.service';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-articulos',
@@ -37,6 +38,24 @@ export class ArticulosComponent implements OnInit {
     { Id: false, Nombre: 'NO' },
   ];
 
+  FormBusqueda = new FormGroup({
+    Nombre: new FormControl(null),
+    Activo: new FormControl(null),
+  });
+
+  FormRegistro = new FormGroup({
+    IdArticulo: new FormControl(0),
+    Nombre: new FormControl(''),
+    Precio: new FormControl(null),
+    Stock: new FormControl(null),
+    CodigoDeBarra: new FormControl(''),
+    IdArticuloFamilia: new FormControl(''),
+    FechaAlta: new FormControl(''),
+    Activo: new FormControl(true),
+  });
+
+  submitted = false;
+
   constructor(
     private articulosService: MockArticulosService,
     private articulosFamiliasService: MockArticulosFamiliasService
@@ -54,14 +73,21 @@ export class ArticulosComponent implements OnInit {
 
   Agregar() {
     this.AccionABMC = 'A';
+    this.FormRegistro.reset({ Activo: true, IdArticulo: 0 });
   }
 
   // Buscar segun los filtros, establecidos en FormRegistro
   Buscar() {
-    this.articulosService.get('', null, this.Pagina).subscribe((res: any) => {
-      this.Items = res.Items;
-      this.RegistrosTotal = res.RegistrosTotal;
-    });
+    this.articulosService
+      .get(
+        this.FormBusqueda.value.Nombre,
+        this.FormBusqueda.value.Activo,
+        this.Pagina
+      )
+      .subscribe((res: any) => {
+        this.Items = res.Items;
+        this.RegistrosTotal = res.RegistrosTotal;
+      });
   }
 
   Consultar(Item: Articulo) {
@@ -79,15 +105,55 @@ export class ArticulosComponent implements OnInit {
 
   // Obtengo un registro especifico según el Id
   BuscarPorId(Item: Articulo, AccionABMC: string) {
-    window.scroll(0, 0); // ir al incio del scroll
-    this.AccionABMC = AccionABMC;
+    window.scroll(0, 0); // ir al inicio del scroll
+
+    this.articulosService.getById(Item.IdArticulo).subscribe((res: any) => {
+      const itemCopy = { ...res }; // hacemos copia para no modificar el array original del mock
+
+      //formatear fecha de  ISO 8601 a string dd/MM/yyyy
+      var arrFecha = itemCopy.FechaAlta.substr(0, 10).split('-');
+      itemCopy.FechaAlta = arrFecha[2] + '/' + arrFecha[1] + '/' + arrFecha[0];
+
+      this.FormRegistro.patchValue(itemCopy);
+      this.AccionABMC = AccionABMC;
+    });
   }
 
   // grabar tanto altas como modificaciones
   Grabar() {
-    alert('Registro Grabado!');
-    this.Volver();
+ 
+    //hacemos una copia de los datos del formulario, para modificar la fecha y luego enviarlo al servidor
+    const itemCopy = { ...this.FormRegistro.value };
+ 
+    //convertir fecha de string dd/MM/yyyy a ISO para que la entienda webapi
+    var arrFecha = itemCopy.FechaAlta.substr(0, 10).split("/");
+    if (arrFecha.length == 3)
+      itemCopy.FechaAlta = 
+          new Date(
+            arrFecha[2],
+            arrFecha[1] - 1,
+            arrFecha[0]
+          ).toISOString();
+ 
+    // agregar post
+    if (this.AccionABMC == "A") {
+      this.articulosService.post(itemCopy).subscribe((res: any) => {
+        this.Volver();
+        alert('Registro agregado correctamente.');
+        this.Buscar();
+      });
+    } else {
+      // modificar put
+      this.articulosService
+        .put(itemCopy.IdArticulo, itemCopy)
+        .subscribe((res: any) => {
+          this.Volver();
+          alert('Registro modificado correctamente.');
+          this.Buscar();
+        });
+    }
   }
+
 
   ActivarDesactivar(Item: Articulo) {
     var resp = confirm(
@@ -95,7 +161,11 @@ export class ArticulosComponent implements OnInit {
         (Item.Activo ? 'desactivar' : 'activar') +
         ' este registro?'
     );
-    if (resp === true) alert('registro activado/desactivado!');
+    if (resp === true) {
+      this.articulosService
+        .delete(Item.IdArticulo)
+        .subscribe((res: any) => this.Buscar());
+    }
   }
 
   // Volver desde Agregar/Modificar
@@ -105,5 +175,10 @@ export class ArticulosComponent implements OnInit {
 
   ImprimirListado() {
     alert('Sin desarrollar...');
+  }
+
+  GetArticuloFamiliaNombre(Id) {
+    var Nombre = this.Familias.find((x) => x.IdArticuloFamilia === Id)?.Nombre;
+    return Nombre;
   }
 }
