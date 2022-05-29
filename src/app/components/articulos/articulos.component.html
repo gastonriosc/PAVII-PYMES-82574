@@ -53,7 +53,7 @@
   id="divTablaResultados"
   *ngIf="AccionABMC == 'L' && Items != null && Items.length > 0"
 >
-  <table class="table table-bordered table-striped">
+  <table class="table table-hover table-sm table-bordered table-striped">
     <thead>
       <tr>
         <th class="text-center">Nombre</th>
@@ -73,11 +73,10 @@
         <td class="text-right">
           {{ GetArticuloFamiliaNombre(item.IdArticuloFamilia) }}
         </td>
-        <td>{{ item.FechaAlta | date: 'dd/MM/yyyy' }}</td>
+        <td class="text-right">{{ item.FechaAlta | date: 'dd/MM/yyyy' }}</td>
         <td>{{ item.Activo ? 'SI' : 'NO' }}</td>
         <td class="text-center text-nowrap">
           <button
-            type="button"
             class="btn btn-sm btn-outline-primary"
             title="Consultar"
             (click)="Consultar(item)"
@@ -104,13 +103,22 @@
       </tr>
     </tbody>
   </table>
+
   <!-- Paginador-->
   <div id="divPaginador">
     <div class="row bg-light">
       <div class="col">
-        <span class="label label-default">Registros: {{ RegistrosTotal }}</span>
+        <span class="pyBadge">Registros: {{ RegistrosTotal }}</span>
       </div>
-      <div class="col text-center">Directiva paginador aqui</div>
+      <div class="col text-center">
+        <ngb-pagination
+          [(page)]="Pagina"
+          (pageChange)="Buscar()"
+          [maxSize]="10"
+          [collectionSize]="RegistrosTotal"
+          [pageSize]="10"
+        ></ngb-pagination>
+      </div>
       <div class="col text-right">
         <button
           type="button"
@@ -150,6 +158,12 @@
       </label>
       <div class="col-sm-6">
         <input type="text" class="form-control" formControlName="Nombre" />
+        <div
+          class="text-danger"
+          *ngIf="FormRegistro.controls['Nombre'].hasError('required')"
+        >
+          Dato requerido.
+        </div>
       </div>
     </div>
 
@@ -165,6 +179,12 @@
           class="form-control"
           formControlName="Precio"
         />
+        <div
+          class="text-danger"
+          *ngIf="FormRegistro.controls['Precio'].hasError('required')"
+        >
+          Dato requerido.
+        </div>
       </div>
     </div>
 
@@ -180,6 +200,12 @@
           class="form-control"
           formControlName="Stock"
         />
+        <div
+          class="text-danger"
+          *ngIf="FormRegistro.controls['Stock'].hasError('required')"
+        >
+          Dato requerido.
+        </div>
       </div>
     </div>
 
@@ -195,6 +221,12 @@
           class="form-control"
           formControlName="CodigoDeBarra"
         />
+        <div
+          class="text-danger"
+          *ngIf="FormRegistro.controls['CodigoDeBarra'].hasError('required')"
+        >
+          Dato requerido.
+        </div>
       </div>
     </div>
 
@@ -219,6 +251,14 @@
             ‌{{ opt.Nombre }}
           </option>
         </select>
+        <div
+          class="text-danger"
+          *ngIf="
+            FormRegistro.controls['IdArticuloFamilia'].hasError('required')
+          "
+        >
+          Dato requerido.
+        </div>
       </div>
     </div>
 
@@ -229,6 +269,12 @@
       </label>
       <div class="col-sm-6">
         <input class="form-control" name="FechaAlta" />
+        <div
+          class="text-danger"
+          *ngIf="FormRegistro.controls['FechaAlta'].hasError('required')"
+        >
+          Dato requerido.
+        </div>
       </div>
     </div>
 
