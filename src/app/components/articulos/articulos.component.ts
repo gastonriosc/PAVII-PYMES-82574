@@ -5,11 +5,7 @@ import { MockArticulosService } from '../../services/mock-articulos.service';
 import { MockArticulosFamiliasService } from '../../services/mock-articulos-familias.service';
 import { ArticulosService } from '../../services/articulos.service';
 import { ArticulosFamiliasService } from '../../services/articulos-familias.service';
-import { 
-  FormGroup, 
-  FormControl, 
-  Validators 
-} from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-articulos',
@@ -98,6 +94,7 @@ export class ArticulosComponent implements OnInit {
   Agregar() {
     this.AccionABMC = 'A';
     this.FormRegistro.reset({ Activo: true, IdArticulo: 0 });
+    this.submitted = false;
   }
 
   // Buscar segun los filtros, establecidos en FormRegistro
@@ -124,6 +121,7 @@ export class ArticulosComponent implements OnInit {
       alert('No puede modificarse un registro Inactivo.');
       return;
     }
+    this.submitted = false;
     this.BuscarPorId(Item, 'M');
   }
 
